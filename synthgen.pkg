@@ -1,0 +1,29 @@
+v 3
+d synthgen. Generate a rank-preserving synthetic stand-in dataset.
+d
+d synthgen builds a synthetic dataset that behaves like the source
+d without containing any of its records: each variable's observed
+d distribution is reproduced exactly (every synthetic value is an
+d observed value), the rank (Spearman) correlations between
+d variables are preserved through a Gaussian-copula draw, and each
+d variable's missing share is re-imposed.  Refuses string and
+d ID-shaped variables loudly, with no override.  Every run returns
+d a utility-and-safety receipt: worst standardized mean gap, worst
+d rank-correlation gap, and the count of synthetic rows duplicating
+d a real record.
+d
+d Requires: Stata 16+.  No Python or other external dependencies.
+d
+d KW: synthetic data
+d KW: privacy
+d KW: disclosure
+d KW: copula
+d KW: data sharing
+d
+d Authors: Eric A. Booth, Sr Researcher, Texas 2036
+d          Elizabeth Teas, Sr Research Scientist, Far Harbor, LLC
+d Support: eric.a.booth@gmail.com
+d Distribution-Date: 20260730
+d
+f synthgen.ado
+f synthgen.sthlp

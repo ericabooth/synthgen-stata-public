@@ -1,0 +1,3 @@
+v 3
+d synthgen: rank-preserving synthetic stand-in datasets for safe collaboration
+p synthgen
