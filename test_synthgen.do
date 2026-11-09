@@ -1,5 +1,5 @@
 *==============================================================================*
-* test_synthgen.do -- battery for synthgen v1.0.1
+* test_synthgen.do -- battery for synthgen v1.0.2
 * Run:  stata-mp -b do test_synthgen.do ["/path/to/pkg"]
 * Judge the run by the log: no r(NNN) errors, no "assertion is false".
 *==============================================================================*

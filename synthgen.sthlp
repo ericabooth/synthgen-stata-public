@@ -1,7 +1,7 @@
 {smcl}
-{* *! version 1.0.1 09nov2026}{...}
+{* *! version 1.0.2 09nov2026}{...}
 {hi:help synthgen}{...}
-{right:v 1.0.1}
+{right:v 1.0.2}
 {hline}
 
 {title:Title}
@@ -47,7 +47,10 @@ the data label marks the file as synthetic.
 variables are refused (encode a category first; a string identifier is a leak,
 not a feature).  Any numeric variable whose nonmissing values are all distinct
 is refused as ID-shaped: synthesizing an identifier manufactures fake people
-with real-looking keys.
+with real-looking keys.  The rule looks only at distinctness, so it also
+refuses a continuous variable whose values happen to be all distinct, such as
+{cmd:price} in {cmd:sysuse auto} or a county-level average; leave such a
+variable out of the varlist.
 
 
 {title:Options}
@@ -61,11 +64,12 @@ drawn.  A leading {cmd:~} is expanded from {cmd:HOME}.
 
 {phang}
 {opt frame(name)} copies the synthetic rows into a frame, replacing it if it
-exists.
+exists.  It cannot name the current frame, which holds the source data
+(error 110, checked before any work).
 
 {phang}
-{opt n(#)} sets the number of synthetic rows; the default is the source
-sample size.
+{opt n(#)} sets the number of synthetic rows; the default (or {cmd:n(0)})
+is the source sample size.  A negative number is an error (198).
 
 {phang}
 {opt seed(#)} sets the random-number seed, making the draw reproducible.

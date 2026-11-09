@@ -1,6 +1,10 @@
 *! synthgen - generate a rank-preserving synthetic stand-in dataset
-*! v1.0.1 09nov2026 Eric A. Booth, Sr Researcher, Texas 2036 <eric.a.booth@gmail.com>
+*! v1.0.2 09nov2026 Eric A. Booth, Sr Researcher, Texas 2036 <eric.a.booth@gmail.com>
 *!                  Elizabeth Teas, Sr Research Scientist, Far Harbor, LLC <elizabeth@farharbor.com>
+*! v1.0.2: value labels travel through a tempfile (no fixed-name file left
+*!         in c(tmpdir), no "file saved" lines); frame() naming the current
+*!         frame and a negative n() are refused up front; the default
+*!         varlist no longer prints a ds listing.
 *! v1.0.1: saving() takes a quoted path with spaces (and , replace), checked
 *!         before any rows are drawn.
 *!
@@ -21,7 +25,7 @@ program define synthgen, rclass
 
     * ----- what to synthesize --------------------------------------------
     if "`varlist'" == "" {
-        ds, has(type numeric)
+        quietly ds, has(type numeric)
         local varlist `r(varlist)'
     }
     if "`varlist'" == "" {
@@ -32,6 +36,15 @@ program define synthgen, rclass
         di as err "synthgen: state where the synthetic rows land:" ///
             " saving(filename) and/or frame(name)."
         exit 198
+    }
+    if `n' < 0 {
+        di as err "synthgen: n() must be a positive number of rows (or omitted for the source size)."
+        exit 198
+    }
+    if "`frame'" != "" & "`frame'" == "`c(frame)'" {
+        di as err "synthgen: frame(`frame') names the current frame, which holds the source data;" ///
+            " choose another frame name."
+        exit 110
     }
 
     * ----- saving(filename [, replace]) ----------------------------------
@@ -156,6 +169,7 @@ program define synthgen, rclass
     }
 
     * carry labels across so the stand-in reads like the source
+    tempfile vlfile
     local j = 0
     foreach v of local varlist {
         local vlab : variable label `v'
@@ -164,8 +178,8 @@ program define synthgen, rclass
             if `"`vlab'"' != "" label variable `v' `"`vlab'"'
         }
         if "`vall'" != "" {
-            label save `vall' using "`c(tmpdir)'/synthgen_vl.do", replace
-            frame `landing': quietly do "`c(tmpdir)'/synthgen_vl.do"
+            quietly label save `vall' using `"`vlfile'"', replace
+            frame `landing': quietly do `"`vlfile'"'
             frame `landing': label values `v' `vall'
         }
     }
