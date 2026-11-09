@@ -1,7 +1,7 @@
 {smcl}
-{* *! version 1.0.0 30jul2026}{...}
+{* *! version 1.0.1 09nov2026}{...}
 {hi:help synthgen}{...}
-{right:v 1.0.0}
+{right:v 1.0.1}
 {hline}
 
 {title:Title}
@@ -54,7 +54,10 @@ with real-looking keys.
 
 {phang}
 {opt saving(filename[, replace])} writes the synthetic rows to a {bf:.dta}
-file.
+file ({bf:.dta} is added when {it:filename} has no extension).  Quote a
+{it:filename} that contains spaces.  {cmd:replace} is the only suboption;
+without it an existing file is an error (602), checked before any rows are
+drawn.  A leading {cmd:~} is expanded from {cmd:HOME}.
 
 {phang}
 {opt frame(name)} copies the synthetic rows into a frame, replacing it if it

@@ -1,5 +1,5 @@
 *==============================================================================*
-* test_synthgen.do -- battery for synthgen v1.0.0
+* test_synthgen.do -- battery for synthgen v1.0.1
 * Run:  stata-mp -b do test_synthgen.do ["/path/to/pkg"]
 * Judge the run by the log: no r(NNN) errors, no "assertion is false".
 *==============================================================================*
@@ -107,6 +107,31 @@ assert _N == 500
 confirm variable wage grade
 restore
 di as res "TEST 8 OK: n() and saving()"
+
+*--- (8b) saving() with spaces in the path, with and without replace ---------*
+* (v1.0.0 stopped with r(198), "invalid 'dir'", on any path with a space)
+local sgd `"`c(tmpdir)'/synthgen test dir"'
+mata: st_local("hasd", strofreal(direxists(st_local("sgd"))))
+if !`hasd' mkdir `"`sgd'"'
+capture erase `"`sgd'/synth share.dta"'
+capture erase `"`sgd'/synth share2.dta"'
+synthgen wage grade, n(50) saving(`"`sgd'/synth share.dta"') seed(11) noreport
+confirm file `"`sgd'/synth share.dta"'
+synthgen wage grade, n(60) saving(`"`sgd'/synth share.dta"', replace) seed(11) noreport
+capture synthgen wage grade, n(60) saving(`"`sgd'/synth share.dta"') seed(11) noreport
+assert _rc == 602                       // exists and no replace
+capture synthgen wage grade, n(60) saving(`"`sgd'/synth share.dta"', bogus) seed(11) noreport
+assert _rc == 198                       // only replace is a suboption
+synthgen wage grade, n(70) saving(`"`sgd'/synth share2"') seed(11) noreport
+confirm file `"`sgd'/synth share2.dta"' // .dta added, as -save- does
+preserve
+use `"`sgd'/synth share.dta"', clear
+assert _N == 60
+restore
+erase `"`sgd'/synth share.dta"'
+erase `"`sgd'/synth share2.dta"'
+rmdir `"`sgd'"'
+di as res "TEST 8b OK: saving() with spaces in the path"
 
 *--- (9) receipt scalars present ---------------------------------------------*
 synthgen wage grade tenure, frame(s4) seed(3)

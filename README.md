@@ -37,6 +37,14 @@ Stata 16 or newer (frames). No Python or other external dependencies.
 do test_synthgen.do
 ```
 
+## Changes
+
+- **1.0.1 (2026-11-09):** `saving()` accepts a path with spaces, quoted, with
+  or without `, replace`; 1.0.0 stopped with r(198) ("invalid 'dir'") and
+  wrote nothing. The filename and the `replace` suboption are checked before
+  any rows are drawn: an existing file without `replace` is r(602), and any
+  other suboption is r(198).
+
 ## Authors
 
 Eric A. Booth, Sr Researcher, Texas 2036 (eric.a.booth@gmail.com)

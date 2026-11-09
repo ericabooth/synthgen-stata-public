@@ -1,6 +1,8 @@
 *! synthgen - generate a rank-preserving synthetic stand-in dataset
-*! v1.0.0 30jul2026 Eric A. Booth, Sr Researcher, Texas 2036 <eric.a.booth@gmail.com>
+*! v1.0.1 09nov2026 Eric A. Booth, Sr Researcher, Texas 2036 <eric.a.booth@gmail.com>
 *!                  Elizabeth Teas, Sr Research Scientist, Far Harbor, LLC <elizabeth@farharbor.com>
+*! v1.0.1: saving() takes a quoted path with spaces (and , replace), checked
+*!         before any rows are drawn.
 *!
 *! Gaussian-copula engine with empirical margins: each synthetic variable
 *! reproduces its source variable's observed distribution exactly (every
@@ -26,10 +28,59 @@ program define synthgen, rclass
         di as err "synthgen: no numeric variables to synthesize."
         exit 102
     }
-    if "`saving'" == "" & "`frame'" == "" {
+    if `"`saving'"' == "" & "`frame'" == "" {
         di as err "synthgen: state where the synthetic rows land:" ///
             " saving(filename) and/or frame(name)."
         exit 198
+    }
+
+    * ----- saving(filename [, replace]) ----------------------------------
+    * (v1.0.1) Split the filename from its suboptions and keep it quoted,
+    * so a path with spaces works; v1.0.0 passed the bare text to -save-.
+    * Checked here, before any work, so a bad saving() fails fast.
+    local sfile ""
+    local sreplace ""
+    if `"`macval(saving)'"' != "" {
+        gettoken sfile sopts : saving, parse(",")
+        local sfile = strtrim(`"`macval(sfile)'"')
+        local sopts = strtrim(`"`macval(sopts)'"')
+        if substr(`"`macval(sopts)'"', 1, 1) == "," {
+            local sopts = strtrim(substr(`"`macval(sopts)'"', 2, .))
+        }
+        if `"`macval(sfile)'"' == "" {
+            di as err "synthgen: saving() needs a filename."
+            exit 198
+        }
+        if !inlist(`"`macval(sopts)'"', "", "replace") {
+            di as err `"synthgen: saving() allows only the replace suboption, not `macval(sopts)'."'
+            exit 198
+        }
+        local sreplace `sopts'
+        * expand a leading ~ from HOME (USERPROFILE on Windows)
+        if substr(`"`macval(sfile)'"', 1, 1) == "~" & ///
+            inlist(substr(`"`macval(sfile)'"', 2, 1), "/", "\", "") {
+            local hm : environment HOME
+            if `"`macval(hm)'"' == "" local hm : environment USERPROFILE
+            if `"`macval(hm)'"' == "" {
+                di as err "synthgen: cannot expand ~ in saving(): HOME is not set."
+                exit 601
+            }
+            local sfile = `"`macval(hm)'"' + substr(`"`macval(sfile)'"', 2, .)
+        }
+        * .dta when the file name has no extension, as -save- does
+        local sbase = substr(`"`macval(sfile)'"', ///
+            max(strrpos(`"`macval(sfile)'"', "/"), strrpos(`"`macval(sfile)'"', "\")) + 1, .)
+        if strpos(`"`macval(sbase)'"', ".") == 0 {
+            local sfile `"`macval(sfile)'.dta"'
+        }
+        if "`sreplace'" == "" {
+            capture confirm file `"`macval(sfile)'"'
+            if !_rc {
+                di as err `"synthgen: file `macval(sfile)' already exists;"' ///
+                    " use saving(filename, replace)."
+                exit 602
+            }
+        }
     }
 
     marksample touse, novarlist
@@ -158,8 +209,11 @@ program define synthgen, rclass
         frame copy `landing' `frame'
         di as txt `"  synthetic rows in frame {bf:`frame'}"'
     }
-    if `"`saving'"' != "" {
-        frame `landing': save `saving'
+    if `"`sfile'"' != "" {
+        if "`sreplace'" != "" {
+            frame `landing': save `"`macval(sfile)'"', replace
+        }
+        else frame `landing': save `"`macval(sfile)'"'
     }
     frame drop `landing'
 
