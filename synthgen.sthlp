@@ -139,5 +139,5 @@ Elizabeth Teas, Sr Research Scientist, Far Harbor, LLC
 {title:Also see}
 
 {psee}
-Help: {helpb riskscan}, {helpb suppress}, {helpb frames}
+Help: {helpb riskscan}, {helpb frames}
 {p_end}
